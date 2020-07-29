@@ -1,6 +1,12 @@
+import Exceptions.InvalidPuzzleException;
 import Pieces.*;
 
-import java.util.Arrays;
+import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chess {
@@ -10,13 +16,66 @@ public class Chess {
 
 
     public Chess() {
-        this("24232225262223242121212121212121000000000000000000000000000000000000000000000000000000000000000011111111111111111413121516121314");
-
+       setUpBoard(gameModeOptionList());
     }
 
-    public Chess(String arg) {
-        setUpBoard(arg);
+    private String gameModeOptionList() {
+        StringBuffer sb=new StringBuffer();
+        Scanner sc = new Scanner(System.in);
+        ArrayList<String> stringList = new ArrayList<>();
+        try
+        {
+            File file=new File("puzzles.txt");
+            FileReader fr=new FileReader(file);
+            BufferedReader br=new BufferedReader(fr);
+            String line;
+            while((line=br.readLine())!=null)
+            {
+                stringList.add(line);
+            }
+            fr.close();
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        Object[] options = {1,2,3,"default"};
+        int n = JOptionPane.showOptionDialog(new JFrame(),
+                "1-"+stringList.get(1)+"\n"+"2-"+stringList.get(3)+"\n"+"3-"+stringList.get(5)+"default",
+                "Choose game mode",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,     //do not use a custom Icon
+                options,  //the titles of buttons
+                options[0]);
+        System.out.println(n);
+        String chessBoard = "";
+        switch (n){
+            case 0:
+                chessBoard = stringList.get(1);
+                break;
+            case 1:
+                chessBoard = stringList.get(3);
+                break;
+            case 2:
+                chessBoard = stringList.get(5);
+                break;
+            default:
+                chessBoard = "24232225262223242121212121212121000000000000000000000000000000000000000000000000000000000000000011111111111111111413121516121314";
+        }
+        checkModeValidation(chessBoard);
+        return chessBoard;
+    }
 
+    private void checkModeValidation(String chessBoard) {
+        try{
+            InvalidPuzzleException.validatePuzzle(chessBoard);
+        }catch (Exception e){
+            String message = e.getMessage();
+            JOptionPane.showMessageDialog(new JFrame(), message, "Dialog",
+                    JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
     }
 
 
@@ -176,7 +235,7 @@ public class Chess {
     }
 
 
-    private boolean checkIfKingIsInCheck(Piece[][] board, int turn) {
+    public boolean checkIfKingIsInCheck(Piece[][] board, int turn) {
         int x = 0;
         int y = 0;
 
@@ -232,7 +291,7 @@ public class Chess {
     }
 
 
-    private void print() {
+    public void print() {
         for (int i = 0; i < BOARD_RANKS; i++) {
             System.out.print((8 - i) + " ");
             for (int j = 0; j < BOARD_FILES; j++) {
@@ -252,7 +311,7 @@ public class Chess {
         return new int[]{56 - s.charAt(1), s.charAt(0) - 97};
     }
 
-    private void printHighlighted(int sourceX, int sourceY) {
+    public void printHighlighted(int sourceX, int sourceY) {
         if (board[sourceX][sourceY] == null) return;
 
         for (int i = 0; i < BOARD_RANKS; i++) {
@@ -279,7 +338,7 @@ public class Chess {
         System.out.println("   A  B  C  D  E  F  G  H ");
     }
 
-    private boolean isSquareReachable(int sourceX, int sourceY,
+    public boolean isSquareReachable(int sourceX, int sourceY,
                                       int destinationX, int destinationY) {
 
         if (board[sourceX][sourceY] == null) return false;
